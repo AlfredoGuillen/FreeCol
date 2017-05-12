@@ -2704,7 +2704,6 @@ public final class InGameController implements NetworkConstants {
         if (!requireOurTurn() || unit == null) return false;
 
         // Check unit, which must be on the map and able to build.
-        if (unit == null) return false;
         final Tile tile = unit.getTile();
         if (tile == null) return false;
         if (!unit.canBuildColony()) {
