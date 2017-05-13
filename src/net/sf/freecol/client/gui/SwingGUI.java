@@ -259,7 +259,7 @@ public class SwingGUI extends GUI {
         canvas.closeMenus();
         final Video video = ResourceManager.getVideo("video.johncena");
         boolean muteAudio = !freeColClient.getSoundController().canPlaySound();
-        muteAudio = true; //Mute for debugging
+        //muteAudio = true; //Mute for debugging
         final VideoComponent vp = new VideoComponent(video, muteAudio);
 
         final class AbortListener implements ActionListener, KeyListener, MouseListener {
