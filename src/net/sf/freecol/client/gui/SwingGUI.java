@@ -255,16 +255,14 @@ public class SwingGUI extends GUI {
      *
      * @param userMsg An optional user message.
      */
-    private void showJOHNCENA(final String userMsg) {
+    private void showJOHNCENA(final String userMsg, Video johnCenaVideo, boolean muted) {
         canvas.closeMenus();
-        final Video video = ResourceManager.getVideo("video.johncena");
-        boolean muteAudio = !freeColClient.getSoundController().canPlaySound();
-        //muteAudio = true; //Mute for debugging
-        final VideoComponent vp = new VideoComponent(video, muteAudio);
+        boolean muteAudio = muted; //Mute for debugging
+        final VideoComponent vp = new VideoComponent(johnCenaVideo, true); //always mute audio for performance
 
         final class AbortListener implements ActionListener, KeyListener, MouseListener {
 
-            private Timer t = null;
+            private Timer t1 = null;
 
             @Override
             public void keyPressed(KeyEvent e) {
@@ -272,8 +270,8 @@ public class SwingGUI extends GUI {
 
             @Override
             public void keyReleased(KeyEvent e1) {
-            	execute();
-                showMainPanel(userMsg);
+                execute();
+                showMainPanel("AND HIS NAME IS JOHN CENA");
             }
 
             @Override
@@ -283,7 +281,7 @@ public class SwingGUI extends GUI {
             @Override
             public void mouseClicked(MouseEvent e3) {
                 execute();
-                showMainPanel(userMsg);
+                showMainPanel("AND HIS NAME IS JOHN CENA");
             }
 
             @Override
@@ -304,37 +302,37 @@ public class SwingGUI extends GUI {
 
             @Override
             public void actionPerformed(ActionEvent ae8) {
-            	// After 12 seconds is up in the Timer, replay the video.
                 execute();
-            	showJOHNCENA(userMsg);
+            	showJOHNCENA("AND HIS NAME IS JOHN CENA", johnCenaVideo, muteAudio);
             }
 
             private void setTimer(Timer t1) {
-                this.t = t1;
+                this.t1 = t1;
             }
 
             private void execute() {
                 canvas.removeKeyListener(this);
                 canvas.removeMouseListener(this);
                 vp.removeMouseListener(this);
-                //vp.removeVideoListener(this);
+                playSound(null); //stop the ogg
                 vp.stop();
                 canvas.remove(vp);
-                if (t != null && t.isRunning()) {
-                    t.stop();
+                if (t1 != null) {
+                    t1.stop();
                 }
             }
         }
         AbortListener l = new AbortListener();
         vp.addMouseListener(l);
-        //vp.addVideoListener(l);
         canvas.showVideoComponent(vp, l, l);
-        vp.play();
         // 12 seconds is the length of the video
-        Timer t2 = new Timer(12000, l);
-        l.setTimer(t2);
-        t2.setRepeats(false);
-        t2.start();
+        Timer t1 = new Timer(13000, l);
+        l.setTimer(t1);
+        t1.setRepeats(false);
+        t1.start();
+        if(!muteAudio)
+        	playSound("sound.intro.johncena"); //play a separate ogg
+        vp.play();
     }
     
     /**
@@ -346,6 +344,7 @@ public class SwingGUI extends GUI {
     public void showOpeningVideo(final String userMsg) {
         canvas.closeMenus();
         final Video video = ResourceManager.getVideo("video.opening");
+        final Video johnCenaVideoResource = ResourceManager.getVideo("video.johncena");
         boolean muteAudio = !freeColClient.getSoundController().canPlaySound();
         //muteAudio = true; Mute for debugging
         final VideoComponent vp = new VideoComponent(video, muteAudio);
@@ -365,7 +364,7 @@ public class SwingGUI extends GUI {
             		// Stops the current video
             		execute();	
             		// Start the meme video, similar to how intro video was started
-            		showJOHNCENA(userMsg);	
+            		showJOHNCENA(userMsg, johnCenaVideoResource, muteAudio);	
             	}else{
             		execute();
             		showMainPanel(userMsg);
@@ -418,7 +417,6 @@ public class SwingGUI extends GUI {
                 canvas.removeKeyListener(this);
                 canvas.removeMouseListener(this);
                 vp.removeMouseListener(this);
-                //vp.removeVideoListener(this);
                 vp.stop();
                 canvas.remove(vp);
                 if (t != null) {
@@ -427,18 +425,19 @@ public class SwingGUI extends GUI {
             }
         }
         
-        AbortListener l = new AbortListener();
-        vp.addMouseListener(l);
-        //vp.addVideoListener(l);
-        canvas.showVideoComponent(vp, l, l);
-        vp.play();
+        AbortListener l1 = new AbortListener();
+        vp.addMouseListener(l1);
+        canvas.showVideoComponent(vp, l1, l1);
+        
         // Cortado applet is failing to quit when finished, make sure it
         // eventually gets kicked.  Change the magic number if we
         // change the opening video length.
-        Timer t2 = new Timer(80000, l);
-        l.setTimer(t2);
+        Timer t2 = new Timer(80000, l1);
+        l1.setTimer(t2);
         t2.setRepeats(false);
         t2.start();
+        
+        vp.play();
     }
 
     /**
@@ -1356,7 +1355,7 @@ public class SwingGUI extends GUI {
 
     @Override
     public void showMainPanel(String userMsg) {
-        playSound("sound.intro.general");
+        //playSound("sound.intro.general");
         canvas.showMainPanel(userMsg);
     }
 
