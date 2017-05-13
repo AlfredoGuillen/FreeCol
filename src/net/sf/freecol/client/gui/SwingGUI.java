@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimerTask;
 import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
@@ -254,11 +255,99 @@ public class SwingGUI extends GUI {
      *
      * @param userMsg An optional user message.
      */
+    private void showJOHNCENA(final String userMsg) {
+        canvas.closeMenus();
+        final Video video = ResourceManager.getVideo("video.johncena");
+        boolean muteAudio = !freeColClient.getSoundController().canPlaySound();
+        muteAudio = true; //Mute for debugging
+        final VideoComponent vp = new VideoComponent(video, muteAudio);
+
+        final class AbortListener implements ActionListener, KeyListener, MouseListener {
+
+            private Timer t = null;
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e1) {
+            	execute();
+                showMainPanel(userMsg);
+            }
+
+            @Override
+            public void keyTyped(KeyEvent e2) {
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e3) {
+                execute();
+                showMainPanel(userMsg);
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e4) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e5) {
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e6) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e7) {
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent ae8) {
+            	// After 12 seconds is up in the Timer, replay the video.
+                execute();
+            	showJOHNCENA(userMsg);
+            }
+
+            private void setTimer(Timer t1) {
+                this.t = t1;
+            }
+
+            private void execute() {
+                canvas.removeKeyListener(this);
+                canvas.removeMouseListener(this);
+                vp.removeMouseListener(this);
+                //vp.removeVideoListener(this);
+                vp.stop();
+                canvas.remove(vp);
+                if (t != null && t.isRunning()) {
+                    t.stop();
+                }
+            }
+        }
+        AbortListener l = new AbortListener();
+        vp.addMouseListener(l);
+        //vp.addVideoListener(l);
+        canvas.showVideoComponent(vp, l, l);
+        vp.play();
+        // 12 seconds is the length of the video
+        Timer t2 = new Timer(12000, l);
+        l.setTimer(t2);
+        t2.setRepeats(false);
+        t2.start();
+    }
+    
+    /**
+     * Shows the <code>VideoPanel</code>.
+     *
+     * @param userMsg An optional user message.
+     */
     @Override
     public void showOpeningVideo(final String userMsg) {
         canvas.closeMenus();
         final Video video = ResourceManager.getVideo("video.opening");
         boolean muteAudio = !freeColClient.getSoundController().canPlaySound();
+        //muteAudio = true; Mute for debugging
         final VideoComponent vp = new VideoComponent(video, muteAudio);
 
         final class AbortListener implements ActionListener, KeyListener, MouseListener, VideoListener {
@@ -271,7 +360,16 @@ public class SwingGUI extends GUI {
 
             @Override
             public void keyReleased(KeyEvent e1) {
-                execute();
+            	// If user press the 'j' key, then show some MEMES.
+            	if(e1.getKeyCode() == KeyEvent.VK_J){
+            		// Stops the current video
+            		execute();	
+            		// Start the meme video, similar to how intro video was started
+            		showJOHNCENA(userMsg);	
+            	}else{
+            		execute();
+            		showMainPanel(userMsg);
+            	}
             }
 
             @Override
@@ -281,6 +379,7 @@ public class SwingGUI extends GUI {
             @Override
             public void mouseClicked(MouseEvent e3) {
                 execute();
+        		showMainPanel(userMsg);
             }
 
             @Override
@@ -302,11 +401,13 @@ public class SwingGUI extends GUI {
             @Override
             public void stopped() {
                 execute();
+        		showMainPanel(userMsg);
             }
 
             @Override
             public void actionPerformed(ActionEvent ae8) {
                 execute();
+        		showMainPanel(userMsg);
             }
 
             private void setTimer(Timer t1) {
@@ -323,10 +424,9 @@ public class SwingGUI extends GUI {
                 if (t != null) {
                     t.stop();
                 }
-                playSound("sound.intro.general");
-                showMainPanel(userMsg);
             }
         }
+        
         AbortListener l = new AbortListener();
         vp.addMouseListener(l);
         //vp.addVideoListener(l);
@@ -1256,6 +1356,7 @@ public class SwingGUI extends GUI {
 
     @Override
     public void showMainPanel(String userMsg) {
+        playSound("sound.intro.general");
         canvas.showMainPanel(userMsg);
     }
 
