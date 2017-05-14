@@ -293,7 +293,7 @@ public class CommandLineOptions
      *
      * @param args Options object.
      */
-    private static void CreateOptions(Options options)
+    private static void createOptionsBuilder(Options options)
     {
         final String help = Messages.message("cli.help");
         final File dummy = new File("dummy");
@@ -537,7 +537,7 @@ public class CommandLineOptions
     {
         Options options = new Options();
 
-        CreateOptions(options);
+        createOptionsBuilder(options);
 
         CommandLineParser parser = new PosixParser();
         boolean usageError = false;
@@ -550,207 +550,38 @@ public class CommandLineOptions
                 printUsage(options, 0);
             }
 
-            /*
-             * "default-locale" already handled in main().
-             * "freecol-data" already handled in main().
-            */
+            /* "default-locale" already handled in main().
+             * "freecol-data" already handled in main(). */
 
-            if (line.hasOption("advantages"))
-            {
-                String arg = line.getOptionValue("advantages");
-                Advantages a = selectAdvantages(arg);
-                if (a == null)
-                {
-                    FreeCol.fatal(StringTemplate.template("cli.error.advantages")
-                        .addName("%advantages%", getValidAdvantages())
-                        .addName("%arg%", arg));
-                }
-            }
+            clientOptions(line);
 
-            if (line.hasOption("check-savegame"))
-            {
-                String arg = line.getOptionValue("check-savegame");
-                if (!FreeColDirectories.setSavegameFile(arg))
-                {
-                	FreeCol.fatal(StringTemplate.template("cli.err.save")
-                        .addName("%string%", arg));
-                }
-                Shared.checkIntegrity = true;
-                Shared.standAloneServer = true;
-            }
+            debugOptions(line);
+            
+            connectionOptions(line);
 
-            if (line.hasOption("clientOptions"))
-            {
-                String fileName = line.getOptionValue("clientOptions");
-                if (!FreeColDirectories.setClientOptionsFile(fileName))
-                {
-                    // Not fatal.
-                    gripe(StringTemplate.template("cli.error.clientOptions")
-                        .addName("%string%", fileName));
-                }
-            }
+            difficultyOptions(line);
 
-            if (line.hasOption("debug")) {
-                // If the optional argument is supplied use limited mode.
-                String arg = line.getOptionValue("debug");
-                if (arg == null || arg.isEmpty()) {
-                    // Let empty argument default to menus functionality.
-                    arg = FreeColDebugger.DebugMode.MENUS.toString();
-                }
-                if (!FreeColDebugger.setDebugModes(arg)) { // Not fatal.
-                    gripe(StringTemplate.template("cli.error.debug")
-                        .addName("%modes%", FreeColDebugger.getDebugModes()));
-                }
-                // user set log level has precedence
-                if (!line.hasOption("log-level")) Shared.logLevel = Level.FINEST;
-            }
-            if (line.hasOption("debug-run")) {
-                FreeColDebugger.enableDebugMode(FreeColDebugger.DebugMode.MENUS);
-                FreeColDebugger.configureDebugRun(line.getOptionValue("debug-run"));
-            }
-            if (line.hasOption("debug-start")) {
-                Shared.debugStart = true;
-                FreeColDebugger.enableDebugMode(FreeColDebugger.DebugMode.MENUS);
-            }
+            gameMechanicsOptions(line);
+            
+            videoIntroOptions(line);
+            guiOptions(line);
+            
+            internalCalcOptions(line);
+            
+            logOptions(line);
 
-            if (line.hasOption("difficulty")) {
-                String arg = line.getOptionValue("difficulty");
-                String difficulty = selectDifficulty(arg);
-                if (difficulty == null) {
-                	FreeCol.fatal(StringTemplate.template("cli.error.difficulties")
-                        .addName("%difficulties%", getValidDifficulties())
-                        .addName("%arg%", arg));
-                }
-            }
+            noOptions(line);
+            
+            saveGameOptions(line);
 
-            if (line.hasOption("europeans")) {
-                int e = selectEuropeanCount(line.getOptionValue("europeans"));
-                if (e < 0) {
-                    gripe(StringTemplate.template("cli.error.europeans")
-                        .addAmount("%min%", EUROPEANS_MIN));
-                }
-            }
-
-            if (line.hasOption("fast")) {
-                Shared.fastStart = true;
-                Shared.introVideo = false;
-            }
-
-            if (line.hasOption("font")) {
-                Shared.fontName = line.getOptionValue("font");
-            }
-
-            if (line.hasOption("full-screen")) {
-                Shared.windowSize = null;
-            }
-
-            if (line.hasOption("gui-scale")) {
-                String arg = line.getOptionValue("gui-scale");
-                if(!setGUIScale(arg)) {
-                    gripe(StringTemplate.template("cli.error.gui-scale")
-                        .addName("%scales%", getValidGUIScales())
-                        .addName("%arg%", arg));
-                }
-            }
-
-            if (line.hasOption("headless")) {
-                Shared.headless = true;
-            }
-
-            if (line.hasOption("load-savegame")) {
-                String arg = line.getOptionValue("load-savegame");
-                if (!FreeColDirectories.setSavegameFile(arg)) {
-                	FreeCol.fatal(StringTemplate.template("cli.error.save")
-                        .addName("%string%", arg));
-                }
-            }
-
-            if (line.hasOption("log-console")) {
-                Shared.consoleLogging = true;
-            }
-            if (line.hasOption("log-file")) {
-                FreeColDirectories.setLogFilePath(line.getOptionValue("log-file"));
-            }
-            if (line.hasOption("log-level")) {
-                setLogLevel(line.getOptionValue("log-level"));
-            }
-
-            if (line.hasOption("name")) {
-                FreeCol.setName(line.getOptionValue("name"));
-            }
-
-            if (line.hasOption("no-intro")) {
-                Shared.introVideo = false;
-            }
-            if (line.hasOption("no-java-check")) {
-            	Shared.javaCheck = false;
-            }
-            if (line.hasOption("no-memory-check")) {
-            	Shared.memoryCheck = false;
-            }
-            if (line.hasOption("no-sound")) {
-            	Shared.sound = false;
-            }
-            if (line.hasOption("no-splash")) {
-                Shared.splashStream = null;
-            }
-
-            if (line.hasOption("private")) {
-            	Shared.publicServer = false;
-            }
-
-            if (line.hasOption("server")) {
-            	Shared.standAloneServer = true;
-            }
-            if (line.hasOption("server-name")) {
-                Shared.serverName = line.getOptionValue("server-name");
-            }
-            if (line.hasOption("server-port")) {
-                String arg = line.getOptionValue("server-port");
-                if (!setServerPort(arg)) {
-                	FreeCol.fatal(StringTemplate.template("cli.error.serverPort")
-                        .addName("%string%", arg));
-                }
-            }
-
-            if (line.hasOption("seed")) {
-                FreeColSeed.setFreeColSeed(line.getOptionValue("seed"));
-            }
-
-            if (line.hasOption("splash")) {
-                String splash = line.getOptionValue("splash");
-                try {
-                    FileInputStream fis = new FileInputStream(splash);
-                    Shared.splashStream = fis;
-                } catch (FileNotFoundException fnfe) {
-                    gripe(StringTemplate.template("cli.error.splash")
-                        .addName("%name%", splash));
-                }
-            }
-
-            if (line.hasOption("tc")) {
-                FreeCol.setTC(line.getOptionValue("tc")); // Failure is deferred.
-            }
-
-            if (line.hasOption("timeout")) {
-                String arg = line.getOptionValue("timeout");
-                if (!setTimeout(arg)) { // Not fatal
-                    gripe(StringTemplate.template("cli.error.timeout")
-                        .addName("%string%", arg)
-                        .addName("%minimum%", Integer.toString(Shared.TIMEOUT_MIN)));
-                }
-            }
+            serverOptions(line);
 
             userOptions(line);
             
-            if (line.hasOption("version")) {
+            if (line.hasOption("version"))
+            {
                 System.out.println("FreeCol " + FreeCol.getVersion());
                 System.exit(0);
-            }
-
-            if (line.hasOption("windowed")) {
-                String arg = line.getOptionValue("windowed");
-                setWindowSize(arg); // Does not fail
             }
 
         } catch (ParseException e) {
@@ -760,28 +591,347 @@ public class CommandLineOptions
         if (usageError) printUsage(options, 1);
     }
     
+    /**
+     * Retrieves the available client settings to the user.
+     *
+     * @param arg User command line input.
+     */
+    private static void clientOptions(CommandLine line)
+    {
+        if (line.hasOption("name"))
+        {
+            FreeCol.setName(line.getOptionValue("name"));
+        }
+        
+        if (line.hasOption("clientOptions"))
+        {
+            String fileName = line.getOptionValue("clientOptions");
+            if (!FreeColDirectories.setClientOptionsFile(fileName))
+            {
+                // Not fatal.
+                gripe(StringTemplate.template("cli.error.clientOptions")
+                    .addName("%string%", fileName));
+            }
+        }
+    }
+    
+    /**
+     * Provides the difficulty settings for the client.
+     *
+     * @param arg User command line input.
+     */
+    private static void difficultyOptions(CommandLine line)
+    {
+        if (line.hasOption("difficulty"))
+        {
+            String arg = line.getOptionValue("difficulty");
+            String difficulty = selectDifficulty(arg);
+            if (difficulty == null)
+            {
+            	FreeCol.fatal(StringTemplate.template("cli.error.difficulties")
+                    .addName("%difficulties%", getValidDifficulties())
+                    .addName("%arg%", arg));
+            }
+        }
+    }
+    
+    /**
+     * Provides internal calculations for the game.
+     *
+     * @param arg User command line input.
+     */
+    private static void internalCalcOptions(CommandLine line)
+    {
+        if (line.hasOption("headless"))
+        {
+            Shared.headless = true;
+        }
+        if (line.hasOption("seed"))
+        {
+            FreeColSeed.setFreeColSeed(line.getOptionValue("seed"));
+        }
+        if (line.hasOption("tc"))
+        {
+            FreeCol.setTC(line.getOptionValue("tc")); // Failure is deferred.
+        }
+    }
+    
+    /**
+     * Provides the users class selection that will alter ingame mechanics depending on the choice.
+     *
+     * @param arg User command line input.
+     */
+    private static void gameMechanicsOptions(CommandLine line)
+    {
+        if (line.hasOption("advantages"))
+        {
+            String arg = line.getOptionValue("advantages");
+            Advantages a = selectAdvantages(arg);
+            if (a == null)
+            {
+                FreeCol.fatal(StringTemplate.template("cli.error.advantages")
+                    .addName("%advantages%", getValidAdvantages())
+                    .addName("%arg%", arg));
+            }
+        }
+        
+        if (line.hasOption("europeans"))
+        {
+            int e = selectEuropeanCount(line.getOptionValue("europeans"));
+            if (e < 0) {
+                gripe(StringTemplate.template("cli.error.europeans")
+                    .addAmount("%min%", EUROPEANS_MIN));
+            }
+        }
+    }
+    
+    /**
+     * Check and loads the client user's saved game data if available.
+     *
+     * @param arg User command line input.
+     */
+    private static void saveGameOptions(CommandLine line)
+    {
+        if (line.hasOption("check-savegame"))
+        {
+            String arg = line.getOptionValue("check-savegame");
+            if (!FreeColDirectories.setSavegameFile(arg))
+            {
+            	FreeCol.fatal(StringTemplate.template("cli.err.save")
+                    .addName("%string%", arg));
+            }
+            Shared.checkIntegrity = true;
+            Shared.standAloneServer = true;
+        }
+        
+        if (line.hasOption("load-savegame"))
+        {
+            String arg = line.getOptionValue("load-savegame");
+            if (!FreeColDirectories.setSavegameFile(arg))
+            {
+            	FreeCol.fatal(StringTemplate.template("cli.error.save")
+                    .addName("%string%", arg));
+            }
+        }
+    }
+    
+    /**
+     * Displays details pertaining to connection issues.
+     *
+     * @param arg User command line input.
+     */
+    private static void connectionOptions(CommandLine line)
+    {
+        if (line.hasOption("timeout"))
+        {
+            String arg = line.getOptionValue("timeout");
+            if (!setTimeout(arg))// Not fatal
+            { 
+                gripe(StringTemplate.template("cli.error.timeout")
+                    .addName("%string%", arg)
+                    .addName("%minimum%", Integer.toString(Shared.TIMEOUT_MIN)));
+            }
+        }
+    }
+    
+    /**
+     * Sets up and plays the video stream during the availability of the splash screen.
+     *
+     * @param arg User command line input.
+     */
+    private static void videoIntroOptions(CommandLine line)
+    {
+        if (line.hasOption("fast"))
+        {
+            Shared.fastStart = true;
+            Shared.introVideo = false;
+        }
+        
+        if (line.hasOption("splash"))
+        {
+            String splash = line.getOptionValue("splash");
+            try
+            {
+                FileInputStream fis = new FileInputStream(splash);
+                Shared.splashStream = fis;
+            }
+            
+            catch (FileNotFoundException fnfe)
+            {
+                gripe(StringTemplate.template("cli.error.splash")
+                    .addName("%name%", splash));
+            }
+        }
+    }
+    
+    /**
+     * Configures ingame graphic options for the client player.
+     *
+     * @param arg User command line input.
+     */
+    private static void guiOptions(CommandLine line)
+    {
+        if (line.hasOption("font"))
+        {
+            Shared.fontName = line.getOptionValue("font");
+        }
+
+        if (line.hasOption("full-screen"))
+        {
+            Shared.windowSize = null;
+        }
+
+        if (line.hasOption("gui-scale"))
+        {
+            String arg = line.getOptionValue("gui-scale");
+            if(!setGUIScale(arg))
+            {
+                gripe(StringTemplate.template("cli.error.gui-scale")
+                    .addName("%scales%", getValidGUIScales())
+                    .addName("%arg%", arg));
+            }
+        }
+        
+        if (line.hasOption("windowed"))
+        {
+            String arg = line.getOptionValue("windowed");
+            setWindowSize(arg); // Does not fail
+        }
+    }
+    
+    /**
+     * Checks if certain functionality/requirements are disabled/missing.
+     *
+     * @param arg User command line input.
+     */
+    private static void noOptions(CommandLine line)
+    {
+        if (line.hasOption("no-intro")) 		{ Shared.introVideo = false; }
+        if (line.hasOption("no-java-check"))	{ Shared.javaCheck = false; }
+        if (line.hasOption("no-memory-check"))	{ Shared.memoryCheck = false; }
+        if (line.hasOption("no-sound"))			{ Shared.sound = false; }
+        if (line.hasOption("no-splash"))		{ Shared.splashStream = null; }
+    }
+    
+    /**
+     * Sets the configurations for debug mode.
+     *
+     * @param arg User command line input.
+     */
+    private static void debugOptions(CommandLine line)
+    {
+        if (line.hasOption("debug"))
+        {
+            // If the optional argument is supplied use limited mode.
+            String arg = line.getOptionValue("debug");
+            if (arg == null || arg.isEmpty())
+            {
+                // Let empty argument default to menus functionality.
+                arg = FreeColDebugger.DebugMode.MENUS.toString();
+            }
+            if (!FreeColDebugger.setDebugModes(arg))// Not fatal.
+            { 
+                gripe(StringTemplate.template("cli.error.debug")
+                    .addName("%modes%", FreeColDebugger.getDebugModes()));
+            }
+            // user set log level has precedence
+            if (!line.hasOption("log-level")) Shared.logLevel = Level.FINEST;
+        }
+        executeDebugOptions(line);
+    }
+    
+    /**
+     * Executes debug mode after configurations are complete.
+     *
+     * @param arg User command line input.
+     */
+    private static void executeDebugOptions(CommandLine line)
+    {
+        if (line.hasOption("debug-run"))
+        {
+            FreeColDebugger.enableDebugMode(FreeColDebugger.DebugMode.MENUS);
+            FreeColDebugger.configureDebugRun(line.getOptionValue("debug-run"));
+        }
+        if (line.hasOption("debug-start"))
+        {
+            Shared.debugStart = true;
+            FreeColDebugger.enableDebugMode(FreeColDebugger.DebugMode.MENUS);
+        }
+    }
+    
+    /**
+     * Configures event file logging options.
+     *
+     * @param arg User command line input.
+     */
+    private static void logOptions(CommandLine line)
+    {
+        if (line.hasOption("log-console"))
+        {
+            Shared.consoleLogging = true;
+        }
+        if (line.hasOption("log-file"))
+        {
+            FreeColDirectories.setLogFilePath(line.getOptionValue("log-file"));
+        }
+        if (line.hasOption("log-level"))
+        {
+            setLogLevel(line.getOptionValue("log-level"));
+        }
+    }
+    
+    /**
+     * Configures server options.
+     *
+     * @param arg User command line input.
+     */
+    private static void serverOptions(CommandLine line)
+    {
+        if (line.hasOption("private"))
+        {
+        	Shared.publicServer = false;
+        }
+        
+        if (line.hasOption("server"))
+        {
+        	Shared.standAloneServer = true;
+        }
+
+        if (line.hasOption("server-name"))
+        {
+            Shared.serverName = line.getOptionValue("server-name");
+        }
+        
+        if (line.hasOption("server-port"))
+        {
+            String arg = line.getOptionValue("server-port");
+            if (!setServerPort(arg))
+            {
+            	FreeCol.fatal(StringTemplate.template("cli.error.serverPort")
+                    .addName("%string%", arg));
+            }
+        }
+    }
+    
+    /**
+     * Handles user cache, configuration, and data directories.
+     *
+     * @param arg User command line input.
+     */
     private static void userOptions(CommandLine line)
     {
         if (line.hasOption("user-cache-directory"))
         {
             String arg = line.getOptionValue("user-cache-directory");
             String errMsg = FreeColDirectories.setUserCacheDirectory(arg);
-            if (errMsg != null) // Not fatal.
-            {
-                gripe(StringTemplate.template(errMsg)
-                    .addName("%string%", arg));
-            }
+            userOptionsHelper(arg, errMsg);
         }
 
         if (line.hasOption("user-config-directory"))
         {
             String arg = line.getOptionValue("user-config-directory");
             String errMsg = FreeColDirectories.setUserConfigDirectory(arg);
-            if (errMsg != null) // Not fatal.
-            {
-                gripe(StringTemplate.template(errMsg)
-                    .addName("%string%", arg));
-            }
+            userOptionsHelper(arg, errMsg);
         }
 
         if (line.hasOption("user-data-directory"))
@@ -793,6 +943,20 @@ public class CommandLineOptions
             	FreeCol.fatal(StringTemplate.template(errMsg)
                     .addName("%string%", arg));
             }
+        }
+    }
+    
+    /**
+     * Helps userOptions method.
+     *
+     * @param arg User cache or configuration directory.
+     */
+    private static void userOptionsHelper(String arg, String errMsg)
+    {
+        if (errMsg != null) // Not fatal.
+        {
+            gripe(StringTemplate.template(errMsg)
+                .addName("%string%", arg));
         }
     }
 }
