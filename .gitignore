@@ -1,5 +1,7 @@
 .metadata
-FreeCol.jar
+/FreeCol.jar
+/*.properties
+/TESTS-TestSuites.xml
 bin/
 tmp/
 build/
