@@ -19,6 +19,10 @@
 
 package net.sf.freecol.common.utils;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+
+import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -27,6 +31,7 @@ public class AllTests {
     public static Test suite() {
         TestSuite suite = new TestSuite("Test for net.sf.freecol.common.utils");
         suite.addTestSuite(UtilsTest.class);
+        suite.addTest(new JUnit4TestAdapter(StringUtilsTest.class));
         return suite;
     }
 }
