@@ -539,6 +539,25 @@ public final class FreeCol
         } catch (IOException ioe) {}
         return null;
     }
+    
+    /**
+     * Sets the server port.
+     *
+     * @param arg The server port number.
+     * @return True if the port was set.
+     */
+    public static boolean setServerPort(String arg)
+    {
+        if (arg == null) return false;
+        try
+        {
+            Shared.serverPort = Integer.parseInt(arg);
+        } catch (NumberFormatException nfe)
+        {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * Gets the timeout.
@@ -553,6 +572,26 @@ public final class FreeCol
         return (Shared.timeout >= Shared.TIMEOUT_MIN) ? Shared.timeout
             : (singlePlayer) ? Integer.MAX_VALUE
             : TIMEOUT_DEFAULT;
+    }
+    
+    /**
+     * Sets the timeout.
+     *
+     * @param timeout A string containing the new timeout.
+     * @return True if the timeout was set.
+     */
+    public static boolean setTimeout(String timeout)
+    {
+        try
+        {
+            int result = Integer.parseInt(timeout);
+            if (result >= Shared.TIMEOUT_MIN)
+            {
+                Shared.timeout = result;
+                return true;
+            }
+        } catch (NumberFormatException nfe) {}
+        return false;
     }
 
     /**

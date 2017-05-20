@@ -24,7 +24,7 @@ import java.util.Locale;
 import junit.extensions.TestSetup;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-
+import junit.framework.JUnit4TestAdapter;
 
 /**
  * The main test class for Freecol. All tests in the subfolders will be run.
@@ -34,10 +34,10 @@ public class AllTests {
     public static Test suite() {
         TestSuite suite = new TestSuite("Test for net.sf.freecol");
         // $JUnit-BEGIN$
-
+        suite.addTest(new JUnit4TestAdapter(FreeColTest.class));
         // $JUnit-END$
-        suite.addTest(net.sf.freecol.common.AllTests.suite());
-        suite.addTest(net.sf.freecol.server.AllTests.suite());
+        //suite.addTest(net.sf.freecol.common.AllTests.suite());
+        //suite.addTest(net.sf.freecol.server.AllTests.suite());
         suite.addTest(net.sf.freecol.server.generator.AllTests.suite());
         //suite.addTest(net.sf.freecol.client.control.AllTests.suite());
         suite.addTest(net.sf.freecol.client.gui.AllTests.suite());

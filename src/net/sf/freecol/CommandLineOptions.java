@@ -125,7 +125,7 @@ public class CommandLineOptions
      *
      * @param arg The log level to set.
      */
-    private static void setLogLevel(String arg)
+    public static void setLogLevel(String arg)
     {
         Shared.logLevel = Level.parse(arg.toUpperCase());
     }
@@ -246,45 +246,7 @@ public class CommandLineOptions
         } catch (NumberFormatException nfe) {}
         return -1;
     }
-    
-    /**
-     * Sets the timeout.
-     *
-     * @param timeout A string containing the new timeout.
-     * @return True if the timeout was set.
-     */
-    public static boolean setTimeout(String timeout)
-    {
-        try
-        {
-            int result = Integer.parseInt(timeout);
-            if (result >= Shared.TIMEOUT_MIN)
-            {
-                Shared.timeout = result;
-                return true;
-            }
-        } catch (NumberFormatException nfe) {}
-        return false;
-    }
-    
-    /**
-     * Sets the server port.
-     *
-     * @param arg The server port number.
-     * @return True if the port was set.
-     */
-    public static boolean setServerPort(String arg)
-    {
-        if (arg == null) return false;
-        try
-        {
-            Shared.serverPort = Integer.parseInt(arg);
-        } catch (NumberFormatException nfe)
-        {
-            return false;
-        }
-        return true;
-    }
+
 	
     //Command Line
     
@@ -725,7 +687,7 @@ public class CommandLineOptions
         if (line.hasOption("timeout"))
         {
             String arg = line.getOptionValue("timeout");
-            if (!setTimeout(arg))// Not fatal
+            if (!FreeCol.setTimeout(arg))// Not fatal
             { 
                 gripe(StringTemplate.template("cli.error.timeout")
                     .addName("%string%", arg)
@@ -905,7 +867,7 @@ public class CommandLineOptions
         if (line.hasOption("server-port"))
         {
             String arg = line.getOptionValue("server-port");
-            if (!setServerPort(arg))
+            if (!FreeCol.setServerPort(arg))
             {
             	FreeCol.fatal(StringTemplate.template("cli.error.serverPort")
                     .addName("%string%", arg));
